@@ -26,9 +26,15 @@ import { NotificationModule } from './notification/notification.module';
     NotificationModule,
     ThrottlerModule.forRoot([
       {
+        name: 'short',
         ttl: 60000,
         limit: 50,
       },
+      {
+        name: 'long',
+        ttl: 3600000,
+        limit: 1000,
+      }
     ]),
   ],
   controllers: [AppController],
