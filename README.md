@@ -275,8 +275,6 @@ For issues, feature requests, or questions:
 - [ ] File upload support for posts/comments
 - [ ] Rich text editor integration
 - [ ] Email notifications
-- [ ] Comment moderation system
-- [ ] Rate limiting and spam protection
 - [ ] OAuth provider integration
 - [ ] Mobile app support
 - [ ] Analytics and metrics
