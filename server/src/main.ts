@@ -9,6 +9,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     origin: configService.get('CORS_ORIGIN', 'http://localhost:3000'),
     credentials: true,
   });
@@ -25,11 +26,13 @@ async function bootstrap() {
   // Set global prefix
   app.setGlobalPrefix('api');
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const port = configService.get('PORT', 3001);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   await app.listen(port);
-  
+
   console.log(`🚀 Server running on http://localhost:${port}`);
   console.log(`📝 API documentation available at http://localhost:${port}/api`);
 }
 
-bootstrap();
+void bootstrap();
