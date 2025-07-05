@@ -11,18 +11,15 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     const redisConfig = {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       host: this.configService.get('REDIS_HOST', 'localhost'),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       port: this.configService.get('REDIS_PORT', 6379),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       password: this.configService.get('REDIS_PASSWORD'),
     };
 
     this.client = createClient({
       url: `redis://${redisConfig.host}:${redisConfig.port}`,
     });
-
+    
     this.subscriber = createClient({
       url: `redis://${redisConfig.host}:${redisConfig.port}`,
     });

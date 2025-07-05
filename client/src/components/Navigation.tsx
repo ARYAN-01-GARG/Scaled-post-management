@@ -3,78 +3,17 @@
 import Link from 'next/link';
 import { useAuth } from '../lib/auth';
 import { Button } from './ui/button';
-import { User, LogOut, Home, Plus } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Bell, User, LogOut, Home, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { Notifications } from './Notifications';
-import { notificationsAPI } from '../lib/api';
-
-interface Notification {
-  id: string;
-  userId: string;
-  type: string;
-  title: string;
-  message: string;
-  data?: {
-    postId?: string;
-    commentId?: string;
-    parentCommentId?: string;
-  };
-  read: boolean;
-  createdAt: string;
-}
 
 export function Navigation() {
   const { user, logout, isAuthenticated } = useAuth();
   const [notificationCount, setNotificationCount] = useState(0);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  // Fetch notifications when component mounts
-  useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      fetchNotifications();
-    }
-  }, [isAuthenticated, user?.id]);
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await notificationsAPI.getAll(1, 20);
-      setNotifications(response.data.notifications || []);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    }
-  };
-
-  const handleNewNotification = (notification: Notification) => {
-    setNotifications(prev => [notification, ...prev]);
-  };
-
-  const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      await notificationsAPI.markAsRead(notificationId);
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
-      setNotificationCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationsAPI.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      setNotificationCount(0);
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
-    }
-  };
-
+  
   useWebSocket({
     userId: user?.id,
     onNotificationCount: (count) => setNotificationCount(count),
-    onNewNotification: handleNewNotification,
   });
 
   if (!isAuthenticated) {
@@ -120,12 +59,14 @@ export function Navigation() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Notifications
-              notifications={notifications}
-              unreadCount={notificationCount}
-              onMarkAsRead={handleMarkAsRead}
-              onMarkAllAsRead={handleMarkAllAsRead}
-            />
+            <button className="relative p-2 text-gray-500 hover:text-gray-900">
+              <Bell className="w-5 h-5" />
+              {notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </span>
+              )}
+            </button>
             
             <div className="flex items-center space-x-2">
               <User className="w-4 h-4" />

@@ -77,23 +77,4 @@ export class NotificationService {
       where: { id },
     });
   }
-
-  async create(data: {
-    userId: string;
-    type: string;
-    title: string;
-    message: string;
-    data?: Record<string, any>;
-  }) {
-    return this.prisma.notification.create({
-      data: {
-        userId: data.userId,
-        type: data.type,
-        title: data.title,
-        message: data.message,
-        data: data.data || {},
-        read: false,
-      },
-    });
-  }
 }

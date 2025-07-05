@@ -19,43 +19,23 @@ interface UseWebSocketProps {
   userId?: string;
   onNotification?: (notification: Notification) => void;
   onNotificationCount?: (count: number) => void;
-  onNewNotification?: (notification: Notification) => void;
 }
 
 export const useWebSocket = ({
-  url = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001',
+  url = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001',
   userId,
   onNotification,
   onNotificationCount,
-  onNewNotification,
 }: UseWebSocketProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
-  
-  // Use refs to store the callback functions to avoid dependency issues
-  const onNotificationRef = useRef(onNotification);
-  const onNotificationCountRef = useRef(onNotificationCount);
-  const onNewNotificationRef = useRef(onNewNotification);
-  
-  // Update refs when props change
-  useEffect(() => {
-    onNotificationRef.current = onNotification;
-    onNotificationCountRef.current = onNotificationCount;
-    onNewNotificationRef.current = onNewNotification;
-  }, [onNotification, onNotificationCount, onNewNotification]);
 
   useEffect(() => {
-    if (!userId) {
-      console.log('WebSocket: No userId provided, skipping connection');
-      return;
-    }
+    if (!userId) return;
 
-    console.log(`WebSocket: Attempting to connect with userId: ${userId}`);
-    const token = localStorage.getItem('accessToken');
     const newSocket = io(url, {
       query: { userId },
-      auth: { token },
       transports: ['websocket'],
     });
 
@@ -74,13 +54,12 @@ export const useWebSocket = ({
 
     newSocket.on('notification', (notification) => {
       console.log('New notification:', notification);
-      onNotificationRef.current?.(notification);
-      onNewNotificationRef.current?.(notification);
+      onNotification?.(notification);
     });
 
     newSocket.on('notification-count', ({ unreadCount }) => {
       console.log('Notification count:', unreadCount);
-      onNotificationCountRef.current?.(unreadCount);
+      onNotificationCount?.(unreadCount);
     });
 
     newSocket.on('connect_error', (error) => {
@@ -94,7 +73,7 @@ export const useWebSocket = ({
     return () => {
       newSocket.close();
     };
-  }, [url, userId]); // Removed callback dependencies to prevent infinite loop
+  }, [url, userId, onNotification, onNotificationCount]);
 
   const markAsRead = (notificationId: string) => {
     if (socket && userId) {
