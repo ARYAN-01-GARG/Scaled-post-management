@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../lib/auth';
 import { postsAPI } from '../lib/api';
 import { Navigation } from '../components/Navigation';
@@ -43,11 +43,7 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchPosts();
-  }, [page]);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       const response = await postsAPI.getAll(page, 10);
@@ -60,7 +56,11 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   if (authLoading) {
     return (

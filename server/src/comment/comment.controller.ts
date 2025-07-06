@@ -10,7 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
-import { CreateCommentDto, UpdateCommentDto, GetCommentsQueryDto } from './dto/comment.dto';
+import {
+  CreateCommentDto,
+  UpdateCommentDto,
+  GetCommentsQueryDto,
+} from './dto/comment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
@@ -21,6 +25,7 @@ export class CommentController {
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Body() createCommentDto: CreateCommentDto, @GetUser() user: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.commentService.create(createCommentDto, user.id);
   }
 

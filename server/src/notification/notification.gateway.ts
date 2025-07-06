@@ -18,6 +18,9 @@ import { NotificationService } from './notification.service';
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
   },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+  namespace: '/',
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -34,7 +37,8 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   async handleConnection(client: Socket) {
     try {
-      // Extract user ID from token (you might need to implement JWT verification for WebSocket)
+      console.log(`WebSocket connection attempt - socketId: ${client.id}`);
+      // Extract user ID from query parameters (no JWT verification for WebSocket)
       const userId = this.extractUserIdFromSocket(client);
       if (userId) {
         // Add socket to user's socket set
@@ -44,10 +48,12 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         this.userSockets.get(userId)?.add(client.id);
 
         console.log(`User ${userId} connected with socket ${client.id}`);
+      } else {
+        console.log(`WebSocket connection without userId, socketId: ${client.id}`);
       }
     } catch (error) {
       console.error('WebSocket connection error:', error);
-      client.disconnect();
+      // Don't disconnect immediately, allow connection but log error
     }
   }
 
@@ -125,7 +131,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       this.server.to(`notifications:${userId}`).emit('notification', notification);
       
       // Also send updated count
-      this.notificationService.getUnreadCount(userId).then(unreadCount => {
+      void this.notificationService.getUnreadCount(userId).then(unreadCount => {
         this.server.to(`notifications:${userId}`).emit('notification-count', { unreadCount });
       });
     } catch (error) {
@@ -137,7 +143,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     try {
       // Extract from handshake query or auth token
       // This is a simplified implementation - you should implement proper JWT verification
-      return client.handshake.query.userId as string || null;
+      return (client.handshake.query.userId as string) || null;
     } catch (error) {
       console.error('Extract user ID error:', error);
       return null;

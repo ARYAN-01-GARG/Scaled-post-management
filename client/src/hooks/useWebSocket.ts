@@ -22,7 +22,7 @@ interface UseWebSocketProps {
 }
 
 export const useWebSocket = ({
-  url = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001',
+  url = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001',
   userId,
   onNotification,
   onNotificationCount,
@@ -31,9 +31,23 @@ export const useWebSocket = ({
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
-  useEffect(() => {
-    if (!userId) return;
+  // Use refs to store the callback functions to avoid dependency issues
+  const onNotificationRef = useRef(onNotification);
+  const onNotificationCountRef = useRef(onNotificationCount);
 
+  // Update refs when props change
+  useEffect(() => {
+    onNotificationRef.current = onNotification;
+    onNotificationCountRef.current = onNotificationCount;
+  }, [onNotification, onNotificationCount]);
+
+  useEffect(() => {
+    if (!userId) {
+      console.log('WebSocket: No userId provided, skipping connection');
+      return;
+    }
+
+    console.log(`WebSocket: Attempting to connect with userId: ${userId}`);
     const newSocket = io(url, {
       query: { userId },
       transports: ['websocket'],
@@ -54,12 +68,12 @@ export const useWebSocket = ({
 
     newSocket.on('notification', (notification) => {
       console.log('New notification:', notification);
-      onNotification?.(notification);
+      onNotificationRef.current?.(notification);
     });
 
     newSocket.on('notification-count', ({ unreadCount }) => {
       console.log('Notification count:', unreadCount);
-      onNotificationCount?.(unreadCount);
+      onNotificationCountRef.current?.(unreadCount);
     });
 
     newSocket.on('connect_error', (error) => {
@@ -73,7 +87,7 @@ export const useWebSocket = ({
     return () => {
       newSocket.close();
     };
-  }, [url, userId, onNotification, onNotificationCount]);
+  }, [url, userId]); // Removed callback dependencies to prevent infinite loop
 
   const markAsRead = (notificationId: string) => {
     if (socket && userId) {

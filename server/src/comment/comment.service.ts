@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import { CreateCommentDto, UpdateCommentDto, GetCommentsQueryDto } from './dto/comment.dto';
+import {
+  CreateCommentDto,
+  UpdateCommentDto,
+  GetCommentsQueryDto,
+} from './dto/comment.dto';
 
 @Injectable()
 export class CommentService {
