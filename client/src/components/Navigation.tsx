@@ -6,11 +6,13 @@ import { Button } from './ui/button';
 import { Bell, User, LogOut, Home, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { Notifications } from './Notifications';
 
 export function Navigation() {
   const { user, logout, isAuthenticated } = useAuth();
   const [notificationCount, setNotificationCount] = useState(0);
-  
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
   useWebSocket({
     userId: user?.id,
     onNotificationCount: (count) => setNotificationCount(count),
@@ -57,22 +59,33 @@ export function Navigation() {
               Create Post
             </Link>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <button className="relative p-2 text-gray-500 hover:text-gray-900">
-              <Bell className="w-5 h-5" />
-              {notificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </span>
-              )}
-            </button>
-            
+            <div className="relative">
+              <button
+                className="relative p-2 text-gray-500 hover:text-gray-900"
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              >
+                <Bell className="w-5 h-5" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
+              </button>
+
+              <Notifications
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
+                onNotificationCountChange={setNotificationCount}
+              />
+            </div>
+
             <div className="flex items-center space-x-2">
               <User className="w-4 h-4" />
               <span className="text-sm text-gray-700">{user?.name || user?.email}</span>
             </div>
-            
+
             <Button
               variant="outline"
               onClick={logout}
